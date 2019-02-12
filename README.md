@@ -1,2 +1,8 @@
 # qt-js
-test task
+### test task
+
+```sh
+$ cd qt-js
+$ npm install
+$ npm run dev
+```
