@@ -8,6 +8,7 @@
     "build": "webpack"
   },
   "dependencies": {
+    "lodash": "^4.17.11",
     "react": "^16.5.0",
     "react-dom": "^16.5.0",
     "ymaps": "^0.1.1"
