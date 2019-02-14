@@ -1,29 +1,49 @@
 import React from 'react';
 import ymaps from 'ymaps';
-import _ from 'lodash';
-import PointBlock from './PointBlock.jsx';
+import Card from './Card.jsx';
+import HTML5Backend from 'react-dnd-html5-backend';
+import { DragDropContext } from 'react-dnd';
+const update = require('immutability-helper');
 
-export default class App extends React.Component {
+class App extends React.Component {
+  state = { point: [], newItem: '' };
+  
   constructor(props) {
     super(props);
   
-    let myMap = null;
     ymaps.load().then(maps => {
-      myMap = new maps.Map('map', {
+      this.map = new maps.Map('map', {
         center: [ 47.11688, 43.88259 ],
         zoom: 13,
         type: 'yandex#map',
         behaviors: [ 'scrollZoom', 'drag' ],
         controls: [ 'zoomControl' ]
       });
-      this.setState({ map: myMap });
     })
     .catch(error => console.log('Failed to load Yandex Maps', error));
 
-    this.state = { point: [], map: myMap };
-    this.addNew = this.addNew.bind(this);
     this.renderMap = this.renderMap.bind(this);
     this.killPoint = this.killPoint.bind(this);
+    this.addPointItem = this.addPointItem.bind(this);
+    this.itemChange = this.itemChange.bind(this);
+  }
+
+  addPointItem(e) {
+    e.preventDefault();
+    if (!this.state.newItem.length) return;
+    this.setState({
+      point: this.state.point.concat({
+        id: this.state.point.length + 1,
+        name: this.state.newItem,
+        coord: this.map.getCenter()
+      })
+    });
+    this.renderMap();
+    this.setState({ newItem: '' });
+  }
+
+  itemChange(e) {
+    this.setState({ newItem: e.target.value });
   }
 
   killPoint(id) {
@@ -43,51 +63,88 @@ export default class App extends React.Component {
     }
   }
 
-  addNew(value) {
-    this.setState({ point: this.state.point.concat({
-      id: this.state.point.length + 1,
-      name: value,
-      coord: this.state.map.getCenter()
-    }) });
-    this.renderMap();
+  changePointCoordinates(id, coord) {
+    let point = this.state.point;
+    let pointLength = point.length;
+    let index = null;
+    for (let i = 0; i < pointLength; i++) {
+      if (point[i].id == id) {
+        index = i;
+        break;
+      }
+    }
+    if (index != null) {
+      point[index].coord = coord;
+      this.setState({ point: point });
+      this.renderMap();
+    }
   }
-
+  
   renderMap() {
-    this.state.map.geoObjects.splice(0, this.state.map.geoObjects.getLength());
+    this.map.geoObjects.removeAll();
     ymaps.load().then(maps => {
       let coords = [];
       let newIndex = 1;
-      _.forEach(this.state.point, (point) => {
+      let that = this;
+      let newPoint = this.state.point;
+      newPoint.forEach(point => {
         coords.push(point.coord);
-        point.id = newIndex;
+        point.id = newIndex++;
         let placemark = new maps.Placemark(point.coord, {
-          balloonContent: '<img src="http://img-fotki.yandex.ru/get/6114/82599242.2d6/0_88b97_ec425cf5_M" />',
-          iconContent: point.id + ': ' + point.name
+          hasBalloon: false,
+          hintContent: point.id + ': ' + point.name,
+          iconContent: point.id
         }, {
-          preset: "islands#yellowStretchyIcon",
-          balloonCloseButton: false,
-          hideIconOnBalloonOpen: false
+          preset: 'islands#circleIcon',
+          iconColor: '#3caa3c',
+          draggable: true
         });
-        this.state.map.geoObjects.add(placemark);
-        newIndex++;
+        that.map.geoObjects.add(placemark);
+        placemark.events.add('dragend', function(e) {
+          that.changePointCoordinates(point.id, placemark.geometry.getCoordinates());
+        });
       });
+      this.setState({ point: newPoint });
       let polyline = new maps.Polyline(coords, {
         hintContent: "Ломаная"
       }, {
         strokeColor: '#123',
         strokeWidth: 4
       });
-      this.state.map.geoObjects.add(polyline);
+      this.map.geoObjects.add(polyline);
     })
     .catch(error => console.log('Failed to load Yandex Maps', error));
+  }
+
+  moveCard = (dragIndex, hoverIndex) => {
+    const { point } = this.state;
+    const dragCard = point[dragIndex];
+
+    this.setState(
+      update(this.state, {
+        point: {
+          $splice: [[dragIndex, 1], [hoverIndex, 0, dragCard]]
+        },
+      }),
+    )
+    this.renderMap();
   }
 
   render() {
     return (
       <div className="main">
-        <PointBlock addNew={this.addNew} point={this.state.point} killPoint={this.killPoint} />
+        <div className="block">
+          <form onSubmit={this.addPointItem}>
+            <input className="block__creator" onChange={this.itemChange} value={this.state.newItem} />
+          </form>
+          <ul className="list">{this.state.point.map((point, i) =>
+            <Card key={point.id} index={i} id={point.id} text={point.name} moveCard={this.moveCard} killPoint={this.killPoint} />
+          )}</ul>
+        </div>
         <div className="map" id="map"></div>
       </div>
     );
   }
 }
+
+export default DragDropContext(HTML5Backend)(App);
