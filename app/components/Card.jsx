@@ -64,15 +64,14 @@ class Card extends React.Component {
 
   render() {
     const opacity = (this.props.isDragging ? 0 : 1);
-    const name = this.props.id + ': ' + this.props.text; 
-
+    
     return (
       this.props.connectDragSource &&
       this.props.connectDropTarget &&
       this.props.connectDragSource(
         this.props.connectDropTarget(
           <li style={{ opacity }} className="item">
-            <span className="item__name">{name}</span>
+            <span className="item__name">{this.props.id}: <strong>{this.props.name}</strong></span>
             <span className="item__kill" onClick={this.killPoint}>x</span>
           </li>),
       )

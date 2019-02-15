@@ -6,6 +6,7 @@ html, body
   font-family: 'Montserrat', 'Ubuntu', sans-serif
   font-size: 15px
   overflow: hidden
+  background-color: #eaeaea
 
 .main
   display: flex
@@ -20,37 +21,33 @@ html, body
 .block
   display: block
   margin: 10px
-  // width: calc(20vw - 20px)
   flex-basis: 300px !important
   height: calc(100vh - 30px)
   padding: 0
-  border: 1px solid #a11
 
 .block__creator
-  margin: 10px
+  margin: 0 0 10px 0
   padding-left: 15px
   padding-right: 15px
   height: 33px
-  width: calc(100% - 50px)
-  border: 1px solid #123
+  width: calc(100% - 30px)
+  border: 1px solid #123123
   font-size: 17px
 
 .map
   display: block
   margin: 10px
   flex-grow: 1
-  // width: calc(80vw - 20px)
   height: calc(100vh - 30px)
   padding: 0
-  border: 1px solid #11a
+  border: 1px solid #123123
 
 .list
   display: block
   list-style: none
-  margin: 10px
-  padding-left: 15px
-  padding-right: 15px
-  width: calc(100% - 50px)
+  margin: 0
+  padding: 0 10px 0 0
+  width: calc(100% - 10px)
   height: calc(100% - 80px)
   overflow-x: hidden
   overflow-y: scroll
@@ -60,7 +57,9 @@ html, body
   padding: 5px
   height: 30px
   width: calc(100% - 10px)
-  border: 1px solid #1f3
+  border: 1px solid #232323
+  background-color: #565656
+  color: #fefefe
   font-size: 15px
   display: flex
   flex-direction: row

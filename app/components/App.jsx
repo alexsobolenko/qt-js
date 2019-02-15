@@ -26,6 +26,7 @@ class App extends React.Component {
     this.killPoint = this.killPoint.bind(this);
     this.addPointItem = this.addPointItem.bind(this);
     this.itemChange = this.itemChange.bind(this);
+    this.moveCard = this.moveCard.bind(this);
   }
 
   addPointItem(e) {
@@ -91,7 +92,7 @@ class App extends React.Component {
         coords.push(point.coord);
         point.id = newIndex++;
         let placemark = new maps.Placemark(point.coord, {
-          hasBalloon: false,
+          balloonContent: '<h2><strong>' + point.name + '</string></h2>',
           hintContent: point.id + ': ' + point.name,
           iconContent: point.id
         }, {
@@ -116,7 +117,7 @@ class App extends React.Component {
     .catch(error => console.log('Failed to load Yandex Maps', error));
   }
 
-  moveCard = (dragIndex, hoverIndex) => {
+  moveCard(dragIndex, hoverIndex) {
     const { point } = this.state;
     const dragCard = point[dragIndex];
 
@@ -138,7 +139,7 @@ class App extends React.Component {
             <input className="block__creator" onChange={this.itemChange} value={this.state.newItem} />
           </form>
           <ul className="list">{this.state.point.map((point, i) =>
-            <Card key={point.id} index={i} id={point.id} text={point.name} moveCard={this.moveCard} killPoint={this.killPoint} />
+            <Card key={point.id} index={i} id={point.id} name={point.name} moveCard={this.moveCard} killPoint={this.killPoint} />
           )}</ul>
         </div>
         <div className="map" id="map"></div>
