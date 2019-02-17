@@ -6,27 +6,35 @@ import { DragDropContext } from 'react-dnd';
 const update = require('immutability-helper');
 
 class App extends React.Component {
-  state = { point: [], newItem: '' };
+  state = {
+    point: [],
+    newItem: ''
+  };
   
   constructor(props) {
     super(props);
   
-    ymaps.load().then(maps => {
-      this.map = new maps.Map('map', {
-        center: [ 47.11688, 43.88259 ],
-        zoom: 13,
-        type: 'yandex#map',
-        behaviors: [ 'scrollZoom', 'drag' ],
-        controls: [ 'zoomControl' ]
-      });
-    })
-    .catch(error => console.log('Failed to load Yandex Maps', error));
-
     this.renderMap = this.renderMap.bind(this);
     this.killPoint = this.killPoint.bind(this);
     this.addPointItem = this.addPointItem.bind(this);
     this.itemChange = this.itemChange.bind(this);
     this.moveCard = this.moveCard.bind(this);
+
+    this.initMap();
+  }
+
+  initMap() {
+    ymaps.load()
+      .then(maps => {
+        this.map = new maps.Map('map', {
+          center: [ 47.11688, 43.88259 ],
+          zoom: 13,
+          type: 'yandex#map',
+          behaviors: [ 'scrollZoom', 'drag' ],
+          controls: [ 'zoomControl' ]
+        });
+      })
+      .catch(error => console.log('Failed to load Yandex Maps', error));
   }
 
   addPointItem(e) {
@@ -47,8 +55,8 @@ class App extends React.Component {
     this.setState({ newItem: e.target.value });
   }
 
-  killPoint(id) {
-    let point = this.state.point;
+  findIndex(id) {
+    let { point } = this.state;
     let pointLength = point.length;
     let index = null;
     for (let i = 0; i < pointLength; i++) {
@@ -57,7 +65,11 @@ class App extends React.Component {
         break;
       }
     }
-    if (index != null) {
+    return index;
+  }
+
+  killPoint(id) {
+    if (this.findIndex(id) != null) {
       point.splice(index, 1);
       this.setState({ point: point });
       this.renderMap();
@@ -65,16 +77,7 @@ class App extends React.Component {
   }
 
   changePointCoordinates(id, coord) {
-    let point = this.state.point;
-    let pointLength = point.length;
-    let index = null;
-    for (let i = 0; i < pointLength; i++) {
-      if (point[i].id == id) {
-        index = i;
-        break;
-      }
-    }
-    if (index != null) {
+    if (this.findIndex(id) != null) {
       point[index].coord = coord;
       this.setState({ point: point });
       this.renderMap();
@@ -83,44 +86,44 @@ class App extends React.Component {
   
   renderMap() {
     this.map.geoObjects.removeAll();
-    ymaps.load().then(maps => {
-      let coords = [];
-      let newIndex = 1;
-      let that = this;
-      let newPoint = this.state.point;
-      newPoint.forEach(point => {
-        coords.push(point.coord);
-        point.id = newIndex++;
-        let placemark = new maps.Placemark(point.coord, {
-          balloonContent: '<h2><strong>' + point.name + '</string></h2>',
-          hintContent: point.id + ': ' + point.name,
-          iconContent: point.id
+    ymaps.load()
+      .then(maps => {
+        let coords = [];
+        let newIndex = 1;
+        let that = this;
+        let newPoint = this.state.point;
+        newPoint.forEach(point => {
+          coords.push(point.coord);
+          point.id = newIndex++;
+          let placemark = new maps.Placemark(point.coord, {
+            balloonContent: '<h2><strong>' + point.name + '</string></h2>',
+            hintContent: point.id + ': ' + point.name,
+            iconContent: point.id
+          }, {
+            preset: 'islands#circleIcon',
+            iconColor: '#3caa3c',
+            draggable: true
+          });
+          that.map.geoObjects.add(placemark);
+          placemark.events.add('dragend', function(e) {
+            that.changePointCoordinates(point.id, placemark.geometry.getCoordinates());
+          });
+        });
+        this.setState({ point: newPoint });
+        let polyline = new maps.Polyline(coords, {
+          hintContent: "Ломаная"
         }, {
-          preset: 'islands#circleIcon',
-          iconColor: '#3caa3c',
-          draggable: true
+          strokeColor: '#123',
+          strokeWidth: 4
         });
-        that.map.geoObjects.add(placemark);
-        placemark.events.add('dragend', function(e) {
-          that.changePointCoordinates(point.id, placemark.geometry.getCoordinates());
-        });
-      });
-      this.setState({ point: newPoint });
-      let polyline = new maps.Polyline(coords, {
-        hintContent: "Ломаная"
-      }, {
-        strokeColor: '#123',
-        strokeWidth: 4
-      });
-      this.map.geoObjects.add(polyline);
-    })
-    .catch(error => console.log('Failed to load Yandex Maps', error));
+        this.map.geoObjects.add(polyline);
+      })
+      .catch(error => console.log('Failed to load Yandex Maps', error));
   }
 
   moveCard(dragIndex, hoverIndex) {
-    const { point } = this.state;
-    const dragCard = point[dragIndex];
-
+    let { point } = this.state;
+    let dragCard = point[dragIndex];
     this.setState(
       update(this.state, {
         point: {
