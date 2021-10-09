@@ -9,6 +9,7 @@
     "test": "jest --watchAll"
   },
   "dependencies": {
+    "bulma": "^0.9.3",
     "dnd-core": "^7.0.2",
     "immutability-helper": "^3.0.0",
     "lodash.flow": "^3.5.0",

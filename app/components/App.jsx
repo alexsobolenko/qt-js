@@ -155,17 +155,23 @@ class App extends React.Component {
             <div className="main">
                 <div className="block">
                     <form onSubmit={this.addPointItem}>
-                        <input className="block__creator" onChange={this.itemChange} value={this.state.newItem} />
-                    </form>
-                    <ul className="list">{this.state.point.map((point, i) =>
-                        <Card
-                            id={point.id}
-                            key={point.id}
-                            index={i}
-                            name={point.name}
-                            moveCard={this.moveCard} killPoint={this.killPoint}
+                        <input
+                            className="block__creator input is-link"
+                            value={this.state.newItem}
+                            onChange={this.itemChange}
                         />
-                    )}</ul>
+                    </form>
+                    <article className="list panel is-success">
+                        {this.state.point.map((point, i) =>
+                            <Card
+                                id={point.id}
+                                key={point.id}
+                                index={i}
+                                name={point.name}
+                                moveCard={this.moveCard} killPoint={this.killPoint}
+                            />
+                        )}
+                    </article>
                 </div>
                 <div className="map" id="map"></div>
             </div>

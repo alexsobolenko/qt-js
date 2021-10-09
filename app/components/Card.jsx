@@ -60,10 +60,10 @@ class Card extends React.Component {
             this.props.connectDropTarget &&
             this.props.connectDragSource(
                 this.props.connectDropTarget(
-                    <li style={{ opacity }} className="item">
+                    <a className="item panel-block" style={{ opacity }}>
                         <span className="item__name">{this.props.id}: <strong>{this.props.name}</strong></span>
-                        <span className="item__kill" onClick={this.killPoint}>x</span>
-                    </li>
+                        <span className="item__kill button is-danger" onClick={this.killPoint}>&times;</span>
+                    </a>
                 ),
             )
         );
